@@ -216,10 +216,11 @@ flask_app = Flask(__name__)
 @flask_app.route('/')
 def index(): return jsonify({"status":"running","bot":"AndroRAT","clients":len(control_server.clients),"server":control_server.running})
 
-@flask_app.route(f'/{TELEGRAM_BOT_TOKEN}', methods=['POST'])
+@flask_app.route('/webhook', methods=['POST'])
 def webhook():
     global application
-    if not application: return 'Application not initialized', 503
+    if not application:
+        return 'Application not initialized', 503
     try:
         update = Update.de_json(request.get_json(force=True), application.bot)
         asyncio.run(application.process_update(update))
